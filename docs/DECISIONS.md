@@ -159,23 +159,42 @@ React、FastAPI、DB本実装へ進む前に、必要な配信データを取得
 
 ---
 
+## D009: Data source for stream metadata
+
+MVPの配信メタデータ取得元には Holodex API v2 を採用する。
+
+YouTube Data API v3 もPoCで比較したが、本番のデータ取得元には使用しない。
+
+### 理由
+
+- Holodexは `topic_id` として具体的なゲーム/トピックを取得できる
+- `include=live_info` により実配信の開始・終了日時を取得できる
+- PoCでは `start_actual != null` によるライブ配信判定がYouTube Data APIの
+  `liveStreamingDetails` と一致した
+- `channel_id` + paginationによりチャンネル初期まで遡って取得できた
+- YouTube Data API単独では具体的ゲーム名を取得できない
+- YouTube APIと外部データを組み合わせる構成はDeveloper Policies上の制約を
+  複雑にするため避ける
+
+### 配信判定
+
+Holodexの `type=stream` はライブ配信を意味しない。
+Shortsや通常投稿も含まれるため、MVPでは
+
+`start_actual != null`
+
+を配信アーカイブの判定条件とする。
+
+### Topic
+
+`topic_id` は検索用メタデータとして使用するが、
+公式または完全に正確なゲーム情報とは扱わない。
+
+---
+
 # Pending Decisions
 
 以下はまだ決定しない。
-
-## P001: データソース
-
-候補:
-
-- Holodex API
-- YouTube Data API v3
-- その他の公式・公開手段
-
-Phase 0で決定する。
-
-## P002: game / topicの取得・管理方法
-
-データソースの実データを確認して決定する。
 
 ## P003: Frontend技術
 
@@ -216,49 +235,8 @@ Phase 0完了後、保存データと更新方式を確認して正式決定す�
 
 対象チャンネルの管理方法も含めてPoC後に決定する。
 
-## P007: 初回取得期間
-
-候補:
-
-- 直近数か月
-- 直近1年
-- 全期間
-
-データ量とAPI制限を確認して決定する。
-
 ## P008: Hosting / Cloud
 
 MVPローカル完成後に検討する。
 
 現時点では特定のクラウドサービスを採用しない。
-
-## Data source for stream metadata
-
-MVPの配信メタデータ取得元には Holodex API v2 を採用する。
-
-YouTube Data API v3 もPoCで比較したが、本番のデータ取得元には使用しない。
-
-### 理由
-
-- Holodexは `topic_id` として具体的なゲーム/トピックを取得できる
-- `include=live_info` により実配信の開始・終了日時を取得できる
-- PoCでは `start_actual != null` によるライブ配信判定がYouTube Data APIの
-  `liveStreamingDetails` と一致した
-- `channel_id` + paginationによりチャンネル初期まで遡って取得できた
-- YouTube Data API単独では具体的ゲーム名を取得できない
-- YouTube APIと外部データを組み合わせる構成はDeveloper Policies上の制約を
-  複雑にするため避ける
-
-### 配信判定
-
-Holodexの `type=stream` はライブ配信を意味しない。
-Shortsや通常投稿も含まれるため、MVPでは
-
-`start_actual != null`
-
-を配信アーカイブの判定条件とする。
-
-### Topic
-
-`topic_id` は検索用メタデータとして使用するが、
-公式または完全に正確なゲーム情報とは扱わない。
