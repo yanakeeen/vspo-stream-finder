@@ -119,3 +119,18 @@ MVPでは次を原則含めない。
 - CI/CD
 - Cloud deployment
 - 外部公開
+
+## Phase 0: Data source PoC
+
+Completed.
+
+- YouTube Data API v3とHolodex API v2を比較
+- VALORANT / Minecraft / Apex Legends / League of Legendsを実データで検証
+- Holodex `topic_id` が代表4ゲームで一致
+- 4チャンネル200動画を調査
+- ライブ配信185件中183件にtopicあり（98.9%）
+- `start_actual != null` とYouTube `liveStreamingDetails` の整合を確認
+- Shorts / 通常動画がHolodex `type=stream` に含まれることを確認
+- channel ID単位でチャンネル初期まで遡れることを確認
+- paginationを実測し、50件×2ページで重複0件を確認
+- MVPデータソースをHolodex API v2に決定
