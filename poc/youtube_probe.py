@@ -11,10 +11,31 @@ if not API_KEY:
 
 
 VIDEO_IDS = [
-    "9nxGMT51JK4",
-    "pQYpSlZSsY0",
-    "YkySMsypko8",
-    "JVM4DPrDcP4",
+    # 橘ひなの
+    "NzpocDBMiEA",
+    "Gg_as9k-Rig",
+    "WiahstHgunk",
+    "2dgGZhwlvpw",
+    "Mcz2GZn7YZU",
+    "OM3D6xux8Cw",
+
+    # 紡木こかげ
+    "8pmrz9kLd-A",
+    "7AOmFoD_GyM",
+
+    # 神成きゅぴ
+    "5lS9lMfvyNs",
+    "1J-ZaMboApg",
+    "01cCr-e2yU4",
+    "w9mSN4cybt4",
+    "hCE-qHr-0bE",
+    "SnJQ8IS80TQ",
+
+    # 胡桃のあ
+    "VAYkLafTCcQ",
+
+    # 過去データで start_actual=None だった要確認動画
+    "-BU_AyNM7I8",
 ]
 
 

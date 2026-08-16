@@ -96,7 +96,10 @@ for channel in channels:
     print(
         channel.get("id"),
         channel.get("name"),
-        channel.get("english_name"),
+        "lang=", channel.get("lang"),
+        "org=", channel.get("org"),
+        "type=", channel.get("type"),
+        "inactive=", channel.get("inactive"),
     )
 
 
@@ -153,4 +156,266 @@ for video in oldest:
             ensure_ascii=False,
             indent=2,
         )
+    )
+
+print("\n=== Holodex live info comparison ===")
+
+LIVE_INFO_TEST_VIDEOS = {
+    "normal_short": "lyYDIRmro94",
+    "normal_clip": "Vh7XBUEFfWA",
+    "live_lol": "XKR7iMRpU8k",
+    "live_biohazard": "HQ0sT_4vX6k",
+    "live_valorant": "_e2tqI5j0ds",
+}
+
+
+def print_video(label: str, video: dict | None):
+    print(f"\n[{label}]")
+
+    if not video:
+        print("NO DATA")
+        return
+
+    print(
+        json.dumps(
+            simplify(video),
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
+
+
+for label, video_id in LIVE_INFO_TEST_VIDEOS.items():
+    print(f"\n--- {label}: {video_id} ---")
+
+    default_result = get_json(
+        "/videos",
+        {
+            "id": video_id,
+            "limit": 1,
+        },
+    )
+
+    live_info_result = get_json(
+        "/videos",
+        {
+            "id": video_id,
+            "include": "live_info",
+            "limit": 1,
+        },
+    )
+
+    detail_result = get_json(
+        f"/videos/{video_id}"
+    )
+
+    print_video(
+        "GET /videos",
+        default_result[0] if default_result else None,
+    )
+
+    print_video(
+        "GET /videos?include=live_info",
+        live_info_result[0] if live_info_result else None,
+    )
+
+    print_video(
+        "GET /videos/{videoId}",
+        detail_result,
+    )
+
+print("\n=== Channel sample analysis ===")
+
+SAMPLE_CHANNELS = {
+    "橘ひなの": "UCvUc0m317LWTTPZoBQV479A",
+    "紡木こかげ": "UC-WX1CXssCtCtc2TNIRnJzg",
+    "神成きゅぴ": "UCMp55EbT_ZlqiMS3lCj01BQ",
+    "胡桃のあ": "UCIcAj6WkJ8vZ7DeJVgmeqKw",
+}
+
+
+for name, channel_id in SAMPLE_CHANNELS.items():
+    videos = get_json(
+        "/videos",
+        {
+            "channel_id": channel_id,
+            "type": "stream",
+            "status": "past",
+            "include": "live_info",
+            "sort": "available_at",
+            "order": "desc",
+            "limit": 50,
+        },
+    )
+
+    actual_streams = [
+        video
+        for video in videos
+        if video.get("start_actual") is not None
+    ]
+
+    missing_topic = [
+        video
+        for video in actual_streams
+        if not video.get("topic_id")
+    ]
+
+    no_start = [
+        video
+        for video in videos
+        if video.get("start_actual") is None
+    ]
+
+    print("start_actual missing:")
+
+    for video in no_start:
+        print(
+            f"  {video.get('id')} | "
+            f"{video.get('topic_id')} | "
+            f"{video.get('duration')}s | "
+            f"{video.get('title')}"
+        )
+
+    topics = {}
+
+    for video in actual_streams:
+        topic = video.get("topic_id") or "<missing>"
+        topics[topic] = topics.get(topic, 0) + 1
+
+    print(f"\n--- {name} ---")
+    print(f"uploads returned: {len(videos)}")
+    print(f"livestream archives: {len(actual_streams)}")
+    print(f"livestream topic missing: {len(missing_topic)}")
+    print("topics:")
+
+    for topic, count in sorted(
+        topics.items(),
+        key=lambda item: (-item[1], item[0]),
+    ):
+        print(f"  {topic}: {count}")
+
+    if missing_topic:
+        print("missing topic titles:")
+
+        for video in missing_topic:
+            print(
+                f"  {video.get('id')} "
+                f"{video.get('title')}"
+            )
+
+    print("latest livestream samples:")
+
+    for video in actual_streams[:10]:
+        print(
+            f"  {video.get('id')} | "
+            f"{video.get('topic_id')} | "
+            f"{video.get('title')}"
+        )
+
+print("\n=== Oldest channel videos ===")
+
+for name, channel_id in SAMPLE_CHANNELS.items():
+    oldest = get_json(
+        "/videos",
+        {
+            "channel_id": channel_id,
+            "type": "stream",
+            "status": "past",
+            "include": "live_info",
+            "sort": "available_at",
+            "order": "asc",
+            "limit": 5,
+        },
+    )
+
+    print(f"\n--- {name} ---")
+
+    for video in oldest:
+        print(
+            f"{video.get('id')} | "
+            f"available={video.get('available_at')} | "
+            f"start={video.get('start_actual')} | "
+            f"topic={video.get('topic_id')} | "
+            f"{video.get('title')}"
+        )
+
+print("\n=== Pagination test ===")
+
+PAGINATION_CHANNEL = {
+    "name": "橘ひなの",
+    "channel_id": "UCvUc0m317LWTTPZoBQV479A",
+}
+
+
+def get_video_page(channel_id: str, offset: int):
+    return get_json(
+        "/videos",
+        {
+            "channel_id": channel_id,
+            "type": "stream",
+            "status": "past",
+            "include": "live_info",
+            "sort": "available_at",
+            "order": "desc",
+            "limit": 50,
+            "offset": offset,
+            "paginated": "1",
+        },
+    )
+
+
+page1 = get_video_page(
+    PAGINATION_CHANNEL["channel_id"],
+    offset=0,
+)
+
+page2 = get_video_page(
+    PAGINATION_CHANNEL["channel_id"],
+    offset=50,
+)
+
+items1 = page1["items"]
+items2 = page2["items"]
+
+ids1 = {video["id"] for video in items1}
+ids2 = {video["id"] for video in items2}
+
+overlap = ids1 & ids2
+
+print(f"channel: {PAGINATION_CHANNEL['name']}")
+print(f"total: {page1['total']}")
+print(f"page1 count: {len(items1)}")
+print(f"page2 count: {len(items2)}")
+print(f"overlap: {len(overlap)}")
+
+if items1:
+    print(
+        "page1 range:",
+        items1[0].get("available_at"),
+        "->",
+        items1[-1].get("available_at"),
+    )
+
+if items2:
+    print(
+        "page2 range:",
+        items2[0].get("available_at"),
+        "->",
+        items2[-1].get("available_at"),
+    )
+
+print("\npage1 last:")
+if items1:
+    print(
+        items1[-1]["id"],
+        items1[-1].get("available_at"),
+        items1[-1].get("title"),
+    )
+
+print("\npage2 first:")
+if items2:
+    print(
+        items2[0]["id"],
+        items2[0].get("available_at"),
+        items2[0].get("title"),
     )
