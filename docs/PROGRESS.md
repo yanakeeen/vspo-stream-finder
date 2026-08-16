@@ -4,7 +4,8 @@ Last Updated: 2026-08-15
 
 ## Current Phase
 
-**Phase 0: Data Source Feasibility Study / PoC - Ready to Start**
+**Phase 0: Data Source Feasibility Study / PoC - Ready to Start**\
+→ **Phase 0 Completed / MVP Design**
 
 ## Completed
 
@@ -59,44 +60,22 @@ MVPでは次を原則含めない。
 
 `docs/DESIGN.md` はPhase 0完了後に作成する。
 
-## Current Important Question
+## Phase 0: Data source PoC
 
-**配信ごとの具体的なゲーム名を、どのデータソースから安定して取得・利用できるか。**
+Completed.
 
-この回答によって、MVP要件・保存データ・データモデル・外部公開条件が変わる可能性がある。
+- YouTube Data API v3とHolodex API v2を比較
+- VALORANT / Minecraft / Apex Legends / League of Legendsを実データで検証
+- Holodex `topic_id` が代表4ゲームで一致
+- 4チャンネル200動画を調査
+- ライブ配信185件中183件にtopicあり（98.9%）
+- `start_actual != null` とYouTube `liveStreamingDetails` の整合を確認
+- Shorts / 通常動画がHolodex `type=stream` に含まれることを確認
+- channel ID単位でチャンネル初期まで遡れることを確認
+- paginationを実測し、50件×2ページで重複0件を確認
+- MVPデータソースをHolodex API v2に決定
 
 ## Next Task
-
-別チャット「データ取得・外部API調査」でPhase 0を実施する。
-
-### Phase 0 Tasks
-
-1. 最新の公式ドキュメントを確認する
-2. Holodex APIとYouTube Data API v3を比較する
-3. 必要に応じて他のデータソースも調査する
-4. VSPO! JPメンバー数名の実データを取得する
-5. game / topic情報の付与率と精度を確認する
-6. 過去配信をどこまで取得できるか確認する
-7. 配信と通常動画・Shorts・Clipを区別できるか確認する
-8. API Key / Rate Limit / 利用規約を確認する
-9. データ保存・外部公開上の注意を整理する
-10. MVPで採用するデータソースを決定する
-
-## Phase 0 Completion Criteria
-
-以下が明確になったらPhase 0を完了とする。
-
-- 採用するデータソース
-- 採用理由
-- 取得できる項目
-- 取得できない項目
-- game / topic情報の信頼性
-- API制限
-- 利用規約上の注意
-- データ更新方法の候補
-- MVPで保存すべきデータ
-
-## After Phase 0
 
 親チャットへ結果を戻し、次を行う。
 
@@ -110,8 +89,6 @@ MVPでは次を原則含めない。
 
 ## Not Started
 
-- GitHubリポジトリ作成
-- データ取得PoC
 - DB設計
 - Backend実装
 - Frontend実装
